@@ -5,7 +5,30 @@
   "projects": {
     "app": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+    
+        "@schematics/angular:component": {
+          "standalone": false
+        },
+      
+        "@schematics/angular:directive": {
+          "standalone": false
+        },
+      
+        "@schematics/angular:pipe": {
+          "standalone": false
+        },
+      
+        "@ionic/angular-toolkit:page": {
+          "standalone": false 
+        },
+      
+        "@ionic/angular-toolkit:component": {
+          "standalone": false
+        }
+
+
+      },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -31,7 +54,11 @@
                 "output": "./svg"
               }
             ],
-            "styles": ["src/global.scss", "src/theme/variables.scss"],
+            "styles": [
+              "node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
+              "src/theme/variables.scss",
+              "src/global.scss"
+            ],
             "scripts": []
           },
           "configurations": {
@@ -111,7 +138,11 @@
                 "output": "./svg"
               }
             ],
-            "styles": ["src/global.scss", "src/theme/variables.scss"],
+            "styles": [
+                "node_modules/@angular/material/prebuilt-themes/indigo-pink.css", 
+                "src/theme/variables.scss",                                 
+                "src/global.scss"     
+            ],
             "scripts": []
           },
           "configurations": {

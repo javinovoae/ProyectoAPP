@@ -4,36 +4,56 @@ import { TabsPage } from './tabs.page';
 
 const routes: Routes = [
   {
-    path: 'tabs',
+    path: '',
     component: TabsPage,
     children: [
+            
       {
-        path: 'tab1',
-        loadChildren: () => import('../tab1/tab1.module').then(m => m.Tab1PageModule)
+        path: 'cuenta',
+        loadChildren: () => import('../cuenta/principal.module').then(m => m.PrincipalPageModule)
+      },
+
+      {
+        path: 'home',
+        loadChildren: () => import('../home/home.module').then(m => m.HomePageModule )
       },
       {
-        path: 'tab2',
-        loadChildren: () => import('../tab2/tab2.module').then(m => m.Tab2PageModule)
+        path: 'historial-ventas',
+        loadChildren: () => import('../historial-ventas/historial-ventas.module').then(m => m.HistorialVentasPageModule)
+      },
+
+            {
+        path: 'inventario',
+        loadChildren: () => import('../inventario/inventario.module').then(m => m.InventarioPageModule)
+      },
+
+            {
+        path: 'evento',
+        loadChildren: () => import('../evento/evento.module').then(m => m.EventoPageModule)
+      },
+       {
+        path: 'productoview',
+        loadChildren: () => import('../productoview/productoview.module').then(m => m.ProductoviewPageModule)
       },
       {
-        path: 'tab3',
-        loadChildren: () => import('../tab3/tab3.module').then(m => m.Tab3PageModule)
+        path: 'venta',
+        loadChildren: () => import('../venta/venta.module').then(m => m.VentaPageModule)
       },
+
+
+
+
       {
         path: '',
-        redirectTo: '/tabs/tab1',
+        redirectTo: '/tabs/home',
         pathMatch: 'full'
       }
     ]
   },
-  {
-    path: '',
-    redirectTo: '/tabs/tab1',
-    pathMatch: 'full'
-  }
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
 })
 export class TabsPageRoutingModule {}

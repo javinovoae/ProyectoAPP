@@ -6,13 +6,12 @@ import { LoginPage } from './login.page';
 const routes: Routes = [
   {
     path: '',
-      loadComponent: () => import('./login.page').then(m => m.LoginPage)
+    component: LoginPage
   }
 ];
 
-
 @NgModule({
-  imports: [RouterModule.forChild(routes)],
+  imports: [RouterModule.forChild(routes),],
   exports: [RouterModule],
 })
 export class LoginPageRoutingModule {}

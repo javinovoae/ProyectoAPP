@@ -1,0 +1,53 @@
+<ion-header>
+  <ion-toolbar class="toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title class="titulo">Historial de Ventas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="contenedor">
+    <ion-card >
+      <ion-card-header>
+        <ion-card-subtitle class="subtitulo"><ion-icon name="brush"></ion-icon>Evento Actual</ion-card-subtitle>
+        <ion-card-title class="nombre-evento">{{ nombreEvento }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="fecha-evento">Fecha del evento: <strong>{{ fechaEvento }}</strong></p>
+      </ion-card-content>
+    </ion-card>
+      
+
+  <ion-list *ngIf="historialVentas.length > 0">
+    <ion-list-header>
+      <ion-label class="detalle-text">Detalle de todas las Ventas</ion-label>
+    </ion-list-header>
+
+    <ion-card *ngFor="let venta of historialVentas">
+
+        <ion-list class="contenedor-lista " lines="none">
+          <ion-list-header>
+            <ion-label class="prod-text">Productos vendidos:</ion-label>
+          </ion-list-header>
+          <ion-item *ngFor="let producto of venta.productosVendidos">
+            <ion-label>
+              <h3 class="nombre-prod">{{ producto.nombre }}</h3>
+              <p class="cantidad">Cantidad: {{ producto.cantidad }}</p>
+            </ion-label>
+            <ion-note slot="end">Subtotal: {{ producto.subtotal }}</ion-note>
+          </ion-item>
+        </ion-list>
+        
+        <ion-item class="ion-text-right ion-margin-top" color="light">
+          <ion-label>
+            <h2 class="venta">Total de la Venta:</h2>
+          </ion-label>
+          <ion-text slot="end" color="primary">
+            <h2 class="venta">{{ venta.total | currency:'CLP':'symbol':'1.0-0' }}</h2>
+          </ion-text>
+        </ion-item>
+      
+
+
+
