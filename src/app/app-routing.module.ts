@@ -41,9 +41,18 @@ const routes: Routes = [
     loadChildren: () => import('./historial-ventas/historial-ventas.module').then( m => m.HistorialVentasPageModule)
   },
     {
+    path: 'registro',
+    loadChildren: () => import('./registro/registro.module').then( m => m.RegistroPageModule)
+  },
+    {
     path: 'tabs',
     loadChildren: () => import('./tabs/tabs.module').then( m => m.TabsPageModule)
   },
+  {
+  path: '**', 
+  loadChildren: () => import('./pages/not-found/not-found.module').then(m => m.NotFoundPageModule)
+},
+
   
 ];
 @NgModule({

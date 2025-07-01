@@ -5,7 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-
+import { HttpClientModule } from '@angular/common/http'; 
 import { IonicModule } from '@ionic/angular';
 
 import { InventarioPageRoutingModule } from './inventario-routing.module';
@@ -18,11 +18,13 @@ import { InventarioPage } from './inventario.page';
     FormsModule,
     IonicModule,
     InventarioPageRoutingModule,
+    HttpClientModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
     MatIconModule
   ],
   declarations: [InventarioPage]
+  
 })
 export class InventarioPageModule {}

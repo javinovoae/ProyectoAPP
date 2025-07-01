@@ -14,7 +14,6 @@ width: 80%;
 color: #b84e1d; 
 }
 
-
 .titulo-gen{
 color: #220404; 
 font-family: "Walter Turncoat", cursive;
@@ -25,8 +24,8 @@ font-size: 2em;
 .lottie-container {
   background-color: rgba(255, 255, 255, 0) !important;
   position: fixed;
-  top: 200px;   
-  right: 200px; 
+  top: 72%;   
+  right: 10%; 
   z-index: -2; 
   pointer-events: none;
   overflow: hidden;
@@ -58,7 +57,9 @@ color:#cc7127
 }
 
 .contenedor-formulario{ 
+  
 color:#c96b2d
+
 }
 
 .icono-iniciosesion {
@@ -76,3 +77,13 @@ ion-content{
   --background: url('../../assets/imag/FONDOPOP.jpg') no-repeat center center / cover ;
 }
 
+.linkregistro {
+    color: var(--ion-color-primary, #c53fd1); 
+    font-weight: bold; 
+    text-decoration: underline; 
+    cursor: pointer;
+  }
+
+mat-label {
+margin-left: 40px
+}

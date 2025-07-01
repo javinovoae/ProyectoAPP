@@ -31,7 +31,7 @@ const routes: Routes = [
         path: 'evento',
         loadChildren: () => import('../evento/evento.module').then(m => m.EventoPageModule)
       },
-       {
+      {
         path: 'productoview',
         loadChildren: () => import('../productoview/productoview.module').then(m => m.ProductoviewPageModule)
       },
@@ -39,8 +39,10 @@ const routes: Routes = [
         path: 'venta',
         loadChildren: () => import('../venta/venta.module').then(m => m.VentaPageModule)
       },
-
-
+      {
+        path: 'registro',
+        loadChildren: () => import('../registro/registro.module').then(m => m.RegistroPageModule)
+      },
 
 
       {

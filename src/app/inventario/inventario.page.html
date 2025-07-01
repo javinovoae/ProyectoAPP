@@ -62,11 +62,11 @@
       <ion-list>
         <ion-item *ngFor="let producto of productosGuardados; let i = index">
           <ion-label>
-            <h2 class="name-prod">{{ producto.nombre }}</h2>
-            <p>Costo: ${{ producto.costo | number:'1.0-0' }}</p>
+            <h2 class="name-prod">{{ producto.name }}</h2>
+            <p>Costo: ${{ producto.price | number:'1.0-0' }}</p>
           </ion-label>
           <ion-buttons slot="end">
-            <ion-button color="danger" (click)="eliminarProducto(i)">
+            <ion-button color="danger" (click)="eliminarProducto(producto.id)">
             <ion-icon class="button-delete"name="trash"></ion-icon>  </ion-button>
           </ion-buttons>
         </ion-item>

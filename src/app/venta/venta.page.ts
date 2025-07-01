@@ -1,9 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { ToastController } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { ApiService } from '../services/api.service';
+import { Product } from '../models/product.model'; 
+import { CantidadTicketCreate, TicketCreate, TicketResponse} from '../models/venta.model';
+import { HttpErrorResponse } from '@angular/common/http'; 
+import { Event } from '../models/event.model'; 
+
 
 interface ProductoVenta {
+  id: number; 
   nombre: string;
   costo: number;
   cantidad: number; 
@@ -16,41 +23,70 @@ interface ProductoVenta {
   styleUrls: ['./venta.page.scss'],
   standalone: false,
 })
-export class VentaPage implements OnInit {
 
+export class VentaPage implements OnInit {
   ventaForm!: FormGroup;
   productosParaVenta: ProductoVenta[] = [];
-  nombreEvento: string = 'Evento no especificado';
-  fechaEvento: string = 'Fecha no especificada';
+  nombreEvento: string = 'Cargando evento...'; 
+  fechaEvento: string = 'Cargando fecha...'; 
+  currentUserId: number | null = null; 
+  currentEventId: number | null = null; 
 
   constructor(
     private fb: FormBuilder,
     private toastController: ToastController,
-    private router: Router
+    private router: Router,
+    private apiService: ApiService,
+    private activatedRoute: ActivatedRoute,
   ) { }
 
   ngOnInit() {
-    this.loadInfoEvento();
+    this.checkAndLoadUserAndEvent(); 
     this.initForm();
+    this.calcularTotales();
+  }
+
+  ionViewWillEnter() {
+    this.checkAndLoadUserAndEvent(); 
+    this.getProductosFormArray().clear(); 
     this.loadProductosParaVenta();
     this.calcularTotales();
   }
 
-  loadInfoEvento() {
+  private checkAndLoadUserAndEvent() {
+    const storedUserIdString = localStorage.getItem('userId');
     const storedEvento = localStorage.getItem('eventoInfo');
+
+    if (storedUserIdString) {
+      this.currentUserId = parseInt(storedUserIdString, 10);
+    } else {
+      this.presentToast('No se ha iniciado sesión. Por favor, inicie sesión.', 'warning');
+      this.router.navigateByUrl('/login', { replaceUrl: true });
+      return;
+    }
+
     if (storedEvento) {
       const eventoInfo = JSON.parse(storedEvento);
       this.nombreEvento = eventoInfo.nombreEvento || 'Evento sin nombre';
       this.fechaEvento = eventoInfo.fechaEvento || 'Fecha sin especificar';
+      this.currentEventId = eventoInfo.id; 
+      if (!this.currentEventId) {
+        this.presentToast('ID de evento no encontrado. Seleccione un evento válido.', 'warning');
+
+        return;
+      }
     } else {
       this.presentToast('No se encontró información del evento. Cree uno en la sección Eventos.', 'warning');
+
+      return;
     }
+    this.loadProductosParaVenta();
   }
+
 
   initForm() {
     this.ventaForm = this.fb.group({
       productos: this.fb.array([]),
-      montoPagado: [0, Validators.min(0)], 
       totalVenta: [{ value: 0, disabled: true }],
     });
 
@@ -61,38 +97,53 @@ export class VentaPage implements OnInit {
     return this.ventaForm.get('productos') as FormArray;
   }
 
-
-
-  loadProductosParaVenta() {
-    const storedProductos = localStorage.getItem('productosParaVentaDelDia');
-    if (storedProductos) {
-      const productosInventario = JSON.parse(storedProductos);
-      if (productosInventario.length === 0) {
-        this.presentToast('No hay productos seleccionados para la venta del día. Redirigiendo a selección de productos.', 'warning');
-        this.router.navigate(['/inventario']);
-        return;
-      }
-      this.productosParaVenta = productosInventario.map((p: any) => ({
-        nombre: p.nombre,
-        costo: p.costo,
-        cantidad: 0,
-        subtotal: 0
-      }));
-
-      this.productosParaVenta.forEach(producto => {
-        this.getProductosFormArray().push(this.fb.group({
-          nombre: [producto.nombre],
-          costo: [producto.costo],
-          cantidad: [0, [Validators.required, Validators.min(1)]],
-          subtotal: [{ value: 0, disabled: true }]
-        }));
-      });
-      this.calcularTotales();
-    } else {
-      this.presentToast('No se han cargado productos para la venta del día. Redirigiendo a selección de productos.', 'warning');
-      this.router.navigate(['/seleccionar-productos']);
+loadProductosParaVenta() {
+    if (this.currentUserId === null) {
+      console.warn('userId es null. No se pueden cargar productos para venta.');
+      this.presentToast('Usuario no identificado. No se pueden cargar productos.', 'danger');
+      return;
     }
+
+    this.apiService.getProductos(this.currentUserId).subscribe({
+      next: (data: Product[]) => {
+        if (data.length === 0) {
+          this.presentToast('No hay productos en tu inventario para vender. Agrega productos en la sección Inventario.', 'warning');
+          this.router.navigate(['/tabs', 'inventario']);
+          return;
+        }
+
+        this.productosParaVenta = data.map(p => ({
+          id: p.id,
+          nombre: p.name,
+          costo: p.price,
+          cantidad: 0,
+          subtotal: 0
+        }));
+
+        while (this.getProductosFormArray().length !== 0) {
+          this.getProductosFormArray().removeAt(0);
+        }
+
+        this.productosParaVenta.forEach(producto => {
+          this.getProductosFormArray().push(this.fb.group({
+            id: [producto.id],
+            nombre: [producto.nombre],
+            costo: [producto.costo],
+            cantidad: [0, [Validators.required, Validators.min(0)]],
+            subtotal: [{ value: 0, disabled: true }]
+          }));
+        });
+        this.calcularTotales();
+      },
+      error: (err: HttpErrorResponse) => { 
+        console.error('Error al cargar productos para venta:', err);
+        const errorMessage = err.message || 'Desconocido';
+        this.presentToast('Error al cargar productos para venta: ' + errorMessage, 'danger');
+        this.router.navigate(['/tabs', 'inventario']);
+      }
+    });
   }
+
 
   onCantidadChange(index: number) {
     const productoControl = this.getProductosFormArray().at(index);
@@ -117,48 +168,65 @@ export class VentaPage implements OnInit {
 
 
   async realizarPago() {
-    const totalVenta = this.ventaForm.get('totalVenta')?.value;
 
-    // Validar que haya al menos un producto con cantidad > 0
-    const productosVendidos = this.productosParaVenta.filter(p => p.cantidad > 0);
-    if (productosVendidos.length === 0) {
-      this.presentToast('Debe haber al menos un producto con una cantidad mayor a cero para registrar la venta.', 'warning');
+    if (this.currentUserId === null || this.currentEventId === null) {
+      this.presentToast('Error: Usuario o evento no identificado para registrar la venta.', 'danger');
       return;
     }
 
-    const ventaData = {
-      fechaVenta: new Date().toISOString(),
-      nombreEvento: this.nombreEvento,
-      fechaEvento: this.fechaEvento,
-      productosVendidos: productosVendidos,
-      total: totalVenta,
+    const totalVenta = this.ventaForm.get('totalVenta')?.value;
+    if (totalVenta <= 0) {
+        this.presentToast('El total de la venta debe ser mayor a cero para registrarla.', 'warning');
+        return;
+    }
+
+    const productosVendidosForm = this.getProductosFormArray().value as ProductoVenta[];
+    const ticketItems: CantidadTicketCreate[] = productosVendidosForm
+      .filter(p => p.cantidad > 0)
+      .map(p => ({
+        product_id: p.id, 
+        cantidad_prod_ticket: p.cantidad
+      }));
+
+    if (ticketItems.length === 0) {
+      this.presentToast('Debe seleccionar al menos un producto con una cantidad mayor a cero para registrar la venta.', 'warning');
+      return;
+    }
+
+    const ticketData: TicketCreate = {
+      buyer_id: this.currentUserId,
+      event_id: this.currentEventId,
+      ticket_items: ticketItems,
     };
 
-    console.log('Venta realizada:', ventaData);
-    this.guardarVentaEnLocalStorage(ventaData);
+    console.log('Datos de venta a enviar:', ticketData);
 
-    this.presentToast('¡Venta registrada con éxito!', 'success');
-    this.resetVenta();
-  }
-
-  guardarVentaEnLocalStorage(venta: any) {
-    let ventas = JSON.parse(localStorage.getItem('historialVentas') || '[]');
-    ventas.push(venta);
-    localStorage.setItem('historialVentas', JSON.stringify(ventas));
+    this.apiService.createTicket(ticketData).subscribe({
+      next: (response: TicketResponse) => {
+        console.log('Venta registrada exitosamente en el backend:', response);
+        this.presentToast('¡Venta registrada con éxito!', 'success');
+        this.resetVenta();
+      },
+      error: (err: HttpErrorResponse) => {
+        console.error('Error al registrar venta:', err);
+        const errorMessage = err.error?.detail || err.message || 'Error al registrar la venta.';
+        this.presentToast('Error al registrar venta: ' + errorMessage, 'danger');
+      }
+    });
   }
 
   resetVenta() {
     this.ventaForm.reset({
-      montoPagado: null,
       totalVenta: 0,
     });
     while (this.getProductosFormArray().length !== 0) {
       this.getProductosFormArray().removeAt(0);
     }
-    this.loadProductosParaVenta();
+    this.productosParaVenta = [];
+    this.loadProductosParaVenta(); 
   }
 
-    redirigirHistorial() {
+  redirigirHistorial() {
     this.router.navigate(['/tabs', 'historial-ventas']);
   }
 
@@ -171,8 +239,4 @@ export class VentaPage implements OnInit {
     });
     toast.present();
   }
-
-
-  
-
 }
