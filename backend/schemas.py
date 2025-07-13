@@ -49,17 +49,26 @@ class UserProfile(UserBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class UserInEvent(BaseModel):
+    id: int
+    name: Optional[str] = None
+    lastname: Optional[str] = None
+    username: str
+    model_config = ConfigDict(from_attributes=True, extra='ignore')
+
 class EventCreate(BaseModel):
+    id: int
     name: str
     manager_id: int
     event_date: str
-
+    manager: UserInEvent
+    model_config = ConfigDict(from_attributes=True, extra='ignore')
     
 # Schema de lectura para Evento
 class Event(EventCreate):
     id: int
     total_earnings: int = 0 
-
+    model_config = ConfigDict(from_attributes=True)
 
 # Schema para la creación de un producto
 class ProductCreate(BaseModel):
@@ -106,14 +115,11 @@ class StockEvent(StockEventCreate):
 
     model_config = ConfigDict(from_attributes=True)
 
-    model_config = ConfigDict(from_attributes=True)
-
-
 # Schema para la creación de un ticket 
 class TicketCreate(BaseModel):
     buyer_id: int
     event_id: int
-    ticket_items: List['CantidadTicketCreate']
+    ticket_items: List['CantidadTicketCreate'] = []
 
 
 # Schema de lectura para Ticket

@@ -26,9 +26,8 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     return db_user
 
+#actualiozar usuario
 def update_user(db: Session, db_user: models.User, user_data: schemas.UserProfileUpdate):
-
-    
     for field, value in user_data.model_dump(exclude_unset=True).items():
         if hasattr(db_user, field): 
             setattr(db_user, field, value) 
@@ -49,6 +48,14 @@ def create_event(db: Session, event: schemas.EventCreate):
     db.commit()
     db.refresh(db_event)
     return db_event
+
+#buscar evento segun nombre,fecha e id del usuario 
+def get_events_by_criteria(db: Session, name: str, event_date: str, manager_id: int):
+    return db.query(models.Event).filter(
+        models.Event.name == name,
+        models.Event.event_date == event_date, 
+        models.Event.manager_id == manager_id
+    ).all() 
 
 
 # Función para crear el ticket y calcular su precio total

@@ -32,7 +32,7 @@ const routes: Routes = [
         loadChildren: () => import('../evento/evento.module').then(m => m.EventoPageModule)
       },
       {
-        path: 'productoview',
+        path: 'productoview/:id',
         loadChildren: () => import('../productoview/productoview.module').then(m => m.ProductoviewPageModule)
       },
       {

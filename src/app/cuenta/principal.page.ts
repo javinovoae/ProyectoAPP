@@ -122,6 +122,29 @@ userId: number | null = null;
       return;
     }
 
+
+        // --- VALIDACIÓN DE EDAD ---
+    if (this.fechaNacimiento) { 
+      const fechaNacimientoDate = new Date(this.fechaNacimiento);
+      const hoy = new Date();
+      const edad = hoy.getFullYear() - fechaNacimientoDate.getFullYear();
+      const mes = hoy.getMonth() - fechaNacimientoDate.getMonth();
+      const dia = hoy.getDate() - fechaNacimientoDate.getDate();
+      
+      if (mes < 0 || (mes === 0 && dia < 0)) {
+      
+        if (edad <= 13) { 
+          this.presentToast('La edad mínima para registrarse es de 13 años.', 'danger');
+          return;
+        }
+      } else if (edad < 13) { 
+        this.presentToast('La edad mínima para registrarse es de 13 años.', 'danger');
+        return;
+      }
+    }
+
+
+
     const loading = await this.loadingController.create({
       message: 'Guardando información del perfil...',
       spinner: 'lines',

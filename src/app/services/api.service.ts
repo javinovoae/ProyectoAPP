@@ -50,6 +50,7 @@ export class ApiService {
     return throwError(() => new Error(errorMessage));
   }
 
+  
   // Métodos de Usuario y Autenticación
 
   createUser(userData: UserCreate): Observable<UserProfile> { 
@@ -91,7 +92,7 @@ export class ApiService {
   }
 
   // Buscar evento por nombre, fecha y manager_id
-  searchEvent(eventName: string, eventDate: string, managerId: number): Observable<Event | null> {
+  searchEventByNameDateManager(eventName: string, eventDate: string, managerId: number): Observable<Event | null> {
     const params = {
       name: eventName,
       event_date: eventDate,

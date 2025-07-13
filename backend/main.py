@@ -92,20 +92,55 @@ async def login_for_access_token(form_data: schemas.UserLogin, db: Session = Dep
 
 # Endpoint para crear tickets
 @app.post("/ticket/", response_model=schemas.Ticket, status_code=status.HTTP_201_CREATED)
-def create_new_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db)):
-    db_ticket = crud.create_ticket(db=db, ticket_data=ticket)
-    return db_ticket
+async def create_ticket_api(
+    ticket_data: schemas.TicketCreate,
+    db: Session = Depends(get_db)
+):
+    try:
+        # >>>>> AÑADE ESTA VALIDACIÓN <<<<<
+        # Revisa si la lista de productos está vacía
+        if not ticket_data.ticket_items:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, # Usar 422 es más descriptivo
+                detail="No se pueden registrar ventas sin productos. El campo 'ticket_items' no puede estar vacío."
+            )
+        # Si la validación pasa, procede con la lógica existente
+        db_ticket = crud.create_ticket(db=db, ticket_data=ticket_data)
+        return db_ticket
+    except HTTPException as e: 
+        # Si la validación anterior lanza una HTTPException, la volvemos a lanzar.
+        raise e
+    except ValueError as e:
+        # Esto captura errores específicos del CRUD
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        # Esto es un "catch-all" para cualquier otro error inesperado
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error interno del servidor: {e}")
 
-#logica eventos
+# buscar evento
 @app.post("/events/", response_model=schemas.Event, status_code=status.HTTP_201_CREATED)
 async def create_new_event(event_data: schemas.EventCreate, db: Session = Depends(get_db)):
-
-    existing_event = crud.get_event_by_name(db, name=event_data.name) 
+    existing_event = crud.get_event_by_name(db, name=event_data.name)
     if existing_event:
         raise HTTPException(status_code=400, detail="Ya existe un evento con este nombre.")
 
     db_event = crud.create_event(db=db, event=event_data)
     return db_event
+
+#devuelve 
+@app.get("/events/search/", response_model=list[schemas.Event]) 
+async def search_event_api(
+    name: str,
+    event_date: str, 
+    manager_id: int,
+    db: Session = Depends(get_db)
+):
+
+    events = crud.get_events_by_criteria(db, name=name, event_date=event_date, manager_id=manager_id)
+
+    if not isinstance(events, list):
+        return [events]
+    return events
 
 
 # Buscar usuario por id

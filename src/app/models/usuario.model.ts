@@ -17,7 +17,7 @@ export interface UserLogin {
 }
 
 export interface LoginResponse {
-  message: string;
+  message?: string;
   user_id: number;
   username: string;
   name?: string;

@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 
+
 const routes: Routes = [
 
   {
@@ -29,7 +30,7 @@ const routes: Routes = [
     loadChildren: () => import('./inventario/inventario.module').then( m => m.InventarioPageModule)
   },
   {
-    path: 'productoview',
+    path: 'productoview/:id',
     loadChildren: () => import('./productoview/productoview.module').then( m => m.ProductoviewPageModule)
   },
   {
