@@ -3,6 +3,20 @@
 
 
 
+.mat-mdc-form-field-error {
+  position: relative !important;
+  z-index: 1 !important;
+  transform: none !important;
+}
+
+/* Asegura que el contenedor de errores no oculte los mensajes */
+.mat-mdc-form-field-subscript-wrapper {
+  position: relative !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+
 //ordenar el tamaño de las casillas
 .mat-mdc-form-field { 
 width: 90%; 

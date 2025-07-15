@@ -107,7 +107,7 @@
               "buildTarget": "app:build:development"
             },
             "ci": {
-              "progress": false
+              
             }
           },
           "defaultConfiguration": "development"
@@ -122,15 +122,16 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "src/test.ts",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "karma.conf.js",
             "inlineStyleLanguage": "scss",
             "assets": [
               {
-                "glob": "**/*",
-                "input": "src/assets",
-                "output": "assets"
+          "glob": "**/*",
+          "input": "node_modules/cypress",
+          "output": "./cypress/",
+          "ignore": ["**/*"]
               },
               {
                 "glob": "**/*.svg",
@@ -139,10 +140,9 @@
               }
             ],
             "styles": [
-                "node_modules/@angular/material/prebuilt-themes/indigo-pink.css", 
-                "src/theme/variables.scss",                                 
-                "src/global.scss"     
-            ],
+            "src/global.scss",
+            "node_modules/@angular/material/prebuilt-themes/indigo-pink.css"
+          ],
             "scripts": []
           },
           "configurations": {

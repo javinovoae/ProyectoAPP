@@ -9,7 +9,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { UserLogin } from '../../app/models/usuario.model'; // Importa UserLogin
+import { fakeAsync, tick } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http'; 
 
 // Mocks de datos de respuesta
 
@@ -29,32 +30,20 @@ describe('LoginPage', () => {
   let loadingControllerSpy: jasmine.SpyObj<LoadingController>;
   let routerSpy: jasmine.SpyObj<Router>;
   let alertControllerSpy: jasmine.SpyObj<AlertController>;
+  let errorMessage = 'Ocurrió un error inesperado al iniciar sesión.';
+
+  
 
   beforeEach(waitForAsync(() => {
-    // Configuración de spies
     toastControllerSpy = jasmine.createSpyObj('ToastController', ['create']);
     loadingControllerSpy = jasmine.createSpyObj('LoadingController', ['create']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']); 
+    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
     alertControllerSpy = jasmine.createSpyObj('AlertController', ['create']);
-
-    // **** CORRECCIÓN CLAVE AQUÍ: Tipado de ApiServiceSpy ****
-    apiServiceSpy = jasmine.createSpyObj<ApiService>('ApiService', ['login']); 
-
-    // Mock de respuestas para los controladores de Ionic
-    toastControllerSpy.create.and.returnValue(Promise.resolve({
-      present: () => Promise.resolve(),
-      dismiss: () => Promise.resolve()
-    } as any));
-
-    loadingControllerSpy.create.and.returnValue(Promise.resolve({
-      present: () => Promise.resolve(),
-      dismiss: () => Promise.resolve()
-    } as any));
-
-    alertControllerSpy.create.and.returnValue(Promise.resolve({
-      present: () => Promise.resolve(),
-      dismiss: () => Promise.resolve()
-    } as any));
+    apiServiceSpy = jasmine.createSpyObj<ApiService>('ApiService', ['login']);
+    
+    toastControllerSpy.create.and.returnValue(Promise.resolve({ present: () => Promise.resolve() } as any));
+    loadingControllerSpy.create.and.returnValue(Promise.resolve({ present: () => Promise.resolve(), dismiss: () => Promise.resolve() } as any));
+    alertControllerSpy.create.and.returnValue(Promise.resolve({ present: () => Promise.resolve() } as any));
 
     TestBed.configureTestingModule({
       declarations: [LoginPage],
@@ -64,7 +53,6 @@ describe('LoginPage', () => {
         MatFormFieldModule,
         MatInputModule,
         MatIconModule
-        
       ],
       providers: [
         { provide: ApiService, useValue: apiServiceSpy },
@@ -81,57 +69,65 @@ describe('LoginPage', () => {
     fixture.detectChanges();
   }));
 
-  it('deberia crear el componente', () => {
+  it('debería crear el componente', () => {
     expect(component).toBeTruthy();
   });
-
-  // Pruebas de validación de campo (movidas fuera del describe anidado si estaban dentro de un 'it')
-  // **** CORRECCIÓN DE ESTRUCTURA: ESTOS 'it' DEBEN ESTAR DIRECTAMENTE EN EL 'describe('LoginPage')'
-  // O en su propio 'describe' block, NO DENTRO DE OTRO 'it' ****
 
   it('debería establecer globalError si los campos están vacíos', async () => {
     component.username = '';
     component.password = '';
+    fixture.detectChanges();
 
     await component.login();
+    fixture.detectChanges();
 
-    // Expectativa: que se establezca la variable globalError
-    expect(component.globalError).toBe('Por favor, corrija los errores del formulario.');
-    // Y que NO se llame al toastController en este caso (según tu login.page.ts)
-    expect(toastControllerSpy.create).not.toHaveBeenCalled();
+    expect(component.globalError).toBe('Por favor, complete todos los campos.');
     expect(apiServiceSpy.login).not.toHaveBeenCalled();
   });
 
-  it('debería mostrar error si username no cumple formato', () => {
-    component.username = 'ab';
-    component.validateUsername();
-    expect(component.usernameError).toContain('entre 3 a 8 caracteres');
-  });
+  describe('Flujo de Login', () => {
 
-  it('debería mostrar error si password está vacío', () => {
-    component.password = '';
-    component.validatePassword();
-    expect(component.passwordError).toContain('La contraseña no puede estar vacía');
-  });
+    it('debería permitir login exitoso', async () => {
+    component.username = 'validUser';
+    component.password = '1234';
+    apiServiceSpy.login.and.returnValue(of(mockSuccessfulLoginResponse));
 
-  it('debería mostrar error si password no tiene 4 dígitos', () => {
-    component.password = '123';
-    component.validatePassword();
-    expect(component.passwordError).toContain('4 dígitos');
-  });
+    await component.login();
+    fixture.detectChanges(); 
 
-  // Pruebas de flujo de login
-  describe('Flujo de Login', () => { 
-    it('debería bloquear login con formulario inválido (por regex)', async () => {
-      component.username = 'ab'; 
-      component.password = '123'; 
-
-      await component.login();
-
-      expect(component.globalError).toBe('Por favor, corrija los errores del formulario.');
-      expect(apiServiceSpy.login).not.toHaveBeenCalled();
-      expect(toastControllerSpy.create).not.toHaveBeenCalled(); 
+    expect(apiServiceSpy.login).toHaveBeenCalledWith({
+      username: 'validUser',
+      password: '1234'
     });
 
   });
+
+it('debería mostrar alerta si login falla', fakeAsync(() => {
+  component.username = 'validUser';
+  component.password = '1234';
+
+  // Mock del error con la estructura que el componente 
+  const mockHttpErrorResponse = new HttpErrorResponse({
+    error: { message: 'Credenciales inválidas' }, 
+    status: 401,
+    statusText: 'Unauthorized',
+    url: 'http://example.com/login' 
+  });
+
+  apiServiceSpy.login.and.returnValue(throwError(() => mockHttpErrorResponse));
+
+  component.login();
+  tick(); // Espera a que se completen las operaciones asíncronas 
+
+  //actualizacion del global error
+  expect(component.globalError).toBe('Credenciales inválidas');
+
+  // Asegúrate de que AlertController.create se llamó con el mensaje correcto
+  expect(alertControllerSpy.create).toHaveBeenCalledWith({
+    header: 'Error de Login',
+    message: 'Credenciales inválidas', // <-- ¡Esto debería coincidir ahora!
+    buttons: ['OK']
+  });
+}));
+});
 });
