@@ -1,5 +1,5 @@
 
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status,Query
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError 
@@ -91,14 +91,12 @@ async def login_for_access_token(form_data: schemas.UserLogin, db: Session = Dep
     }
 
 # Endpoint para crear tickets
-@app.post("/ticket/", response_model=schemas.Ticket, status_code=status.HTTP_201_CREATED)
+@app.post("/tickets/", response_model=schemas.Ticket, status_code=status.HTTP_201_CREATED)
 async def create_ticket_api(
     ticket_data: schemas.TicketCreate,
     db: Session = Depends(get_db)
 ):
     try:
-        # >>>>> AÑADE ESTA VALIDACIÓN <<<<<
-        # Revisa si la lista de productos está vacía
         if not ticket_data.ticket_items:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, # Usar 422 es más descriptivo
@@ -108,14 +106,32 @@ async def create_ticket_api(
         db_ticket = crud.create_ticket(db=db, ticket_data=ticket_data)
         return db_ticket
     except HTTPException as e: 
-        # Si la validación anterior lanza una HTTPException, la volvemos a lanzar.
         raise e
     except ValueError as e:
         # Esto captura errores específicos del CRUD
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        # Esto es un "catch-all" para cualquier otro error inesperado
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error interno del servidor: {e}")
+
+
+# --- NUEVO ENDPOINT: Para obtener tickets (Historial de Ventas) ---
+@app.get("/tickets/", response_model=list[schemas.Ticket]) # O list[schemas.TicketResponse] si tienes ese esquema
+async def get_tickets_api(
+    event_id: int = Query(..., description="ID del evento para filtrar tickets"),
+    buyer_id: int = Query(..., description="ID del comprador/usuario para filtrar tickets"),
+    db: Session = Depends(get_db)
+):
+    """
+    Obtiene una lista de tickets filtrados por ID de evento y ID de comprador.
+    """
+    tickets = crud.get_tickets_by_event_and_buyer(db, event_id=event_id, buyer_id=buyer_id)
+    if not tickets:
+        # Puedes optar por devolver una lista vacía o 404 si no se encuentran tickets.
+        # Para un historial, es común devolver una lista vacía.
+        # raise HTTPException(status_code=404, detail="No se encontraron tickets para los criterios especificados.")
+        return [] # Devolver una lista vacía es más amigable para un historial
+    return tickets
+
 
 # buscar evento
 @app.post("/events/", response_model=schemas.Event, status_code=status.HTTP_201_CREATED)
@@ -221,20 +237,3 @@ async def read_products_for_user(
     """
     products = crud.get_products_by_user(db, user_id=user_id)
     return products
-
-# enviar tickets
-@app.post("/tickets/", response_model=schemas.Ticket, status_code=status.HTTP_201_CREATED)
-async def create_ticket_api(
-    ticket_data: schemas.TicketCreate,
-    db: Session = Depends(get_db)
-):
-    try:
-
-        db_ticket = crud.create_ticket(db=db, ticket_data=ticket_data)
-        return db_ticket
-    except HTTPException as e: 
-        raise e
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error interno del servidor: {e}")

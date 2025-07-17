@@ -3,6 +3,9 @@ import { Router } from '@angular/router';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { UserLogin, LoginResponse } from '../../app/models/usuario.model';
 import { ApiService } from '../../app/services/api.service';
+import { AuthService } from '../../app/services/auth.service'; 
+
+
 
 @Component({
   selector: 'app-login',
@@ -22,16 +25,19 @@ export class LoginPage implements OnInit {
     private apiService: ApiService, 
     private alertController: AlertController,
     private loadingController: LoadingController,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private authService: AuthService,
   ) {}
 
   ngOnInit() {
-    const storedUsername = localStorage.getItem('username');
-    if (storedUsername) {
-      this.username = storedUsername;
-      console.log('Usuario cargado desde localStorage:', storedUsername);
+    if (this.authService.isAuthenticated()) {
+      this.username = this.authService.getUsername() || '';
+      console.log('Usuario cargado desde localStorage (vía AuthService):', this.username);
+      // Opcional: Redirigir si ya está logueado, aunque PublicGuard lo haría:
+      // this.router.navigate(['/tabs', 'home'], { replaceUrl: true });
     }
   }
+
 
   isFormValid(): boolean {
     return !!this.username && !!this.password;
@@ -67,6 +73,8 @@ export class LoginPage implements OnInit {
         });
         await toast.present();
 
+        
+
         this.router.navigate(['/tabs', 'home'], {
           queryParams: {
             username: res.username || this.username,
@@ -75,6 +83,8 @@ export class LoginPage implements OnInit {
           replaceUrl: true
         });
       },
+
+      
       error: async (err: any) => {
         await loading.dismiss();
         console.error('Error durante el login:', err);

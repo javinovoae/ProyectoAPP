@@ -12,7 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatNativeDateModule } from '@angular/material/core';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
-// Objeto mock para simular un evento
+// Objeto mock 
 const mockEvent = {
   id: 123,
   name: 'Evento de prueba',
@@ -37,7 +37,7 @@ describe('EventoPage', () => {
     apiServiceSpy = jasmine.createSpyObj('ApiService', ['searchEventByNameDateManager', 'createEvent']);
     navControllerSpy = jasmine.createSpyObj('NavController', ['navigateForward']);
 
-    // Configura el espía de ApiService para que devuelva un Observable
+    // Configura el espía de ApiService 
     apiServiceSpy.searchEventByNameDateManager.and.returnValue(of(mockEvent));
     apiServiceSpy.createEvent.and.returnValue(of(mockEvent));
 
@@ -79,6 +79,7 @@ describe('EventoPage', () => {
 
     component.nombreEvento = ''; 
     component.fechaEvento = new Date();
+    
     await component.guardarInformacionEvento();
 
     expect(createSpy).toHaveBeenCalledWith(jasmine.objectContaining({

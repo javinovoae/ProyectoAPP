@@ -5,21 +5,21 @@
     ];
 
     beforeEach(() => {
-        // 1. Configurar localStorage
+        // Configurar localStorage
         cy.window().then((win) => {
         win.localStorage.setItem('username', 'testuser');
         win.localStorage.setItem('userId', '1');
         win.localStorage.setItem('access_token', 'fake-token-1234');
         });
 
-        // 2. Interceptar API con delay para simular carga real
+        //Interceptar API con delay para simular carga real
         cy.intercept('GET', '**/users/1/products', {
         statusCode: 200,
         body: productosDePrueba,
         delay: 1000 
         }).as('getProductos');
 
-        // 3. Visitar página con opciones mejoradas
+        // Visitar página con opciones mejoradas
         cy.visit('http://localhost:8100/inventario', {
         onBeforeLoad(win) {
         
@@ -28,7 +28,7 @@
         timeout: 30000
         });
 
-        // 4. Esperar a que la aplicación esté completamente lista
+        // Esperar a que la aplicación esté completamente lista
         cy.get('app-inventario', { timeout: 20000 }).should('exist');
         cy.get('ion-content', { timeout: 15000 }).should('be.visible');
     });

@@ -1,8 +1,8 @@
 
 import { Observable, from, throwError } from 'rxjs'; 
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http'; 
-import { catchError, map } from 'rxjs/operators'; 
+import { HttpClient, HttpHeaders, HttpErrorResponse,HttpParams  } from '@angular/common/http'; 
+import { catchError, map } from 'rxjs/operators';
 import { UserCreate, UserLogin, LoginResponse, UserProfileUpdate, UserProfile } from '../../app/models/usuario.model';
 import { Event,EventCreate } from '../../app/models/event.model';
 import { Product, ProductCreate } from '../models/product.model';
@@ -130,5 +130,16 @@ export class ApiService {
       catchError(this.handleError)
     );
   }
+
+getTicketsByEventAndUser(eventId: number, buyerId: number): Observable<TicketResponse[]> {
+    const params = new HttpParams()
+      .set('event_id', eventId.toString())
+      .set('buyer_id', buyerId.toString());
+
+    return this.http.get<TicketResponse[]>(`${this.apiUrl}/tickets/`, { params }).pipe(
+      catchError(this.handleError)
+    );
+    }
+
 }
 

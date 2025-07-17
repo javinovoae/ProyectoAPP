@@ -32,7 +32,6 @@ describe('LoginPage', () => {
   let alertControllerSpy: jasmine.SpyObj<AlertController>;
   let errorMessage = 'Ocurrió un error inesperado al iniciar sesión.';
 
-  
 
   beforeEach(waitForAsync(() => {
     toastControllerSpy = jasmine.createSpyObj('ToastController', ['create']);

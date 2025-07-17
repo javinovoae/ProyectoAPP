@@ -67,6 +67,7 @@ class StockEvent(Base):
 class Ticket(Base):
     __tablename__ = "tickets"
     id = Column(Integer, primary_key=True, index=True)
+    price_ticket = Column(Integer, nullable=False)
     buyer_id = Column(Integer, ForeignKey("users.id"))
     event_id = Column(Integer, ForeignKey("events.id"))
     sale_date = Column(DateTime, default=datetime.utcnow) 

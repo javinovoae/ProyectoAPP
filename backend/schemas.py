@@ -57,17 +57,17 @@ class UserInEvent(BaseModel):
     model_config = ConfigDict(from_attributes=True, extra='ignore')
 
 class EventCreate(BaseModel):
-    id: int
     name: str
     manager_id: int
     event_date: str
-    manager: UserInEvent
-    model_config = ConfigDict(from_attributes=True, extra='ignore')
     
-# Schema de lectura para Evento
-class Event(EventCreate):
-    id: int
-    total_earnings: int = 0 
+class Event(BaseModel):
+    id: int 
+    name: str
+    manager_id: int 
+    event_date: str
+    manager: UserInEvent 
+    total_earnings: int = 0
     model_config = ConfigDict(from_attributes=True)
 
 # Schema para la creación de un producto
@@ -84,12 +84,6 @@ class StockEventCreate(BaseModel):
     quantity_stock_event: int
     prod_price_event: int
 
-# Schema para el item de cantidad de ticket 
-class CantidadTicketCreate(BaseModel):
-    ticket_id: int
-    product_id: int
-    cantidad_prod_ticket: int = 1
-
 
 # --- Lectura  ---
 
@@ -101,12 +95,43 @@ class Product(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-# Schema para el item de cantidad de ticket (respuesta)
-class CantidadTicket(CantidadTicketCreate): #
+class CantidadTicket(BaseModel): 
+    id: int # El ID de la tabla CantidadTicket
+    ticket_id: int # El ID del ticket al que pertenece (útil para depuración)
+    product_id: int
+    cantidad_prod_ticket: int
+    product_obj_ticket: Product
+
+    # Opcional: Si quieres incluir detalles del producto asociado, necesitarías:
+    # product: Product  # Asumiendo que tienes un esquema 'Product' de lectura
+    
+    model_config = ConfigDict(from_attributes=True)
+# Schema para el item de cantidad de ticket 
+class CantidadTicketCreate(BaseModel):
     product_id: int
     cantidad_prod_ticket: int = 1
+    
+    # Schema para la creación de un ticket 
+class TicketCreate(BaseModel):
+    buyer_id: int
+    event_id: int
+    ticket_items: List['CantidadTicketCreate'] = []
+
+
+# Schema de lectura para Ticket
+class Ticket(BaseModel): 
+    id: int # El ID del ticket principal
+    sale_date: datetime # La fecha de venta
+    price_ticket: int # El precio total del ticket (reconsidera float)
+    buyer_id: int # ID del comprador
+    event_id: int # ID del evento
+
+    # ¡LA CLAVE! La lista de ítems de este ticket, usando el esquema de respuesta CantidadTicket
+    ticket_items: List[CantidadTicket] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+
 
 # Schema para el item de stock de evento (respuesta)
 class StockEvent(StockEventCreate):
@@ -115,20 +140,7 @@ class StockEvent(StockEventCreate):
 
     model_config = ConfigDict(from_attributes=True)
 
-# Schema para la creación de un ticket 
-class TicketCreate(BaseModel):
-    buyer_id: int
-    event_id: int
-    ticket_items: List['CantidadTicketCreate'] = []
 
-
-# Schema de lectura para Ticket
-class Ticket(TicketCreate): 
-    id: int
-    sale_date: datetime 
-    price_ticket: int 
-
-    model_config = ConfigDict(from_attributes=True)
 
 # Esquema completo de usuario para respuesta
 class User(UserBase): # Hereda de UserBase
