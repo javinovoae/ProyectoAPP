@@ -31,6 +31,8 @@ export interface UserProfileUpdate {
   education?: string | null;
   birthdate?: string | null; 
   is_active?: boolean;
+  latitude?: number | null; 
+  longitude?: number | null; 
 }
 
 export interface UserProfile {
@@ -41,5 +43,6 @@ export interface UserProfile {
   lastname?: string | null;
   education?: string | null;
   birthdate?: string | null; 
-
+  latitude?: number | null;  
+  longitude?: number | null; 
 }

@@ -14,12 +14,14 @@ class LoginResponse(BaseModel):
     username: str
     name: Optional[str] = None     
     lastname: Optional[str] = None
+    latitude: Optional[float] = None  
+    longitude: Optional[float] = None 
 
     class Config:
         from_attributes = True 
 
 
-# --- perfil del usuario ---
+#perfil del usuario 
 
 class UserBase(BaseModel):
     username: str
@@ -28,11 +30,12 @@ class UserBase(BaseModel):
     lastname: Optional[str] = None
     education: Optional[str] = None
     birthdate: Optional[str] = None 
+    latitude: Optional[float] = None  
+    longitude: Optional[float] = None 
 
 class UserCreate(UserBase): 
     password: str 
 
-    # --- Esquemas de Creación/Actualización ---
 
 class UserProfileUpdate(BaseModel): 
     name: Optional[str] = None
@@ -40,6 +43,8 @@ class UserProfileUpdate(BaseModel):
     education: Optional[str] = None
     birthdate: Optional[str] = None
     is_active: Optional[bool] = None
+    latitude: Optional[float] = None  
+    longitude: Optional[float] = None 
 
 #lectura
 class UserProfile(UserBase): 
@@ -96,14 +101,12 @@ class Product(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class CantidadTicket(BaseModel): 
-    id: int # El ID de la tabla CantidadTicket
-    ticket_id: int # El ID del ticket al que pertenece (útil para depuración)
+    id: int 
+    ticket_id: int 
     product_id: int
     cantidad_prod_ticket: int
     product_obj_ticket: Product
 
-    # Opcional: Si quieres incluir detalles del producto asociado, necesitarías:
-    # product: Product  # Asumiendo que tienes un esquema 'Product' de lectura
     
     model_config = ConfigDict(from_attributes=True)
 # Schema para el item de cantidad de ticket 
@@ -120,13 +123,12 @@ class TicketCreate(BaseModel):
 
 # Schema de lectura para Ticket
 class Ticket(BaseModel): 
-    id: int # El ID del ticket principal
-    sale_date: datetime # La fecha de venta
-    price_ticket: int # El precio total del ticket (reconsidera float)
-    buyer_id: int # ID del comprador
-    event_id: int # ID del evento
+    id: int 
+    sale_date: datetime 
+    price_ticket: int 
+    buyer_id: int 
+    event_id: int 
 
-    # ¡LA CLAVE! La lista de ítems de este ticket, usando el esquema de respuesta CantidadTicket
     ticket_items: List[CantidadTicket] = []
 
     model_config = ConfigDict(from_attributes=True)
@@ -143,10 +145,8 @@ class StockEvent(StockEventCreate):
 
 
 # Esquema completo de usuario para respuesta
-class User(UserBase): # Hereda de UserBase
+class User(UserBase): 
     id: int 
-
-    # Relaciones que devuelves con el usuario
     events_managed: List[Event] = [] 
     tickets_bought: List[Ticket] = [] 
     

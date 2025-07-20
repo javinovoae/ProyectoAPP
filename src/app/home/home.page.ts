@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service'; // <--- IMPORTA EL AUTHSERVICE
+
 
 @Component({
   selector: 'app-home',
@@ -10,7 +12,9 @@ import { Router } from '@angular/router';
 export class HomePage implements OnInit {
   username: string = 'Usuario'; 
 
-  constructor(private router: Router) {}
+  constructor(private router: Router,
+    private authService: AuthService 
+  ) {}
 
   ngOnInit() {
 
@@ -33,6 +37,12 @@ export class HomePage implements OnInit {
   goToHistorial() {
     
     this.router.navigate(['/tabs/historial-ventas']); 
+  }
+
+  async logout() {
+    await this.authService.logout(); // Llama al método logout de tu AuthService
+    // El AuthService ya maneja la redirección a la página de login
+    // Después de esto, el usuario será redirigido a /tabs/login
   }
 
   }

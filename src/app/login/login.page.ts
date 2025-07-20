@@ -59,12 +59,18 @@ export class LoginPage implements OnInit {
       password: this.password,
     };
 
-    this.apiService.login(credentials).subscribe({
+        this.apiService.login(credentials).subscribe({
       next: async (res: LoginResponse) => {
         await loading.dismiss();
         console.log('Login exitoso:', res);
-        localStorage.setItem('username', this.username);
-        localStorage.setItem('userId', res.user_id.toString());
+        this.globalError = ''; // Limpiar cualquier mensaje de error previo
+
+        // **¡CORRECCIÓN AQUÍ!**
+        // 1. **Eliminamos:** localStorage.setItem('username', this.username);
+        // 2. **Eliminamos:** localStorage.setItem('userId', res.user_id.toString());
+        // La siguiente línea (authService.login) ya hace esto por ti de forma centralizada.
+        this.authService.login(res.username || this.username, res.user_id);
+
 
         const toast = await this.toastController.create({
           message: `¡Bienvenido, ${res.username || this.username}!`,
@@ -74,7 +80,6 @@ export class LoginPage implements OnInit {
         await toast.present();
 
         
-
         this.router.navigate(['/tabs', 'home'], {
           queryParams: {
             username: res.username || this.username,
@@ -83,43 +88,40 @@ export class LoginPage implements OnInit {
           replaceUrl: true
         });
       },
-
-      
       error: async (err: any) => {
         await loading.dismiss();
         console.error('Error durante el login:', err);
 
-        // --- INICIO DE LA MODIFICACIÓN CRUCIAL ---
-        let errorMessage = 'Ocurrió un error inesperado al iniciar sesión.'; // Mensaje por defecto
+        let errorMessage = 'Ocurrió un error inesperado al iniciar sesión.';
 
         if (err && typeof err === 'object') {
-            // 1. **PRIORIDAD:** Intentar obtener el mensaje de la carga útil del error del servidor (err.error.message)
             if (err.error && typeof err.error === 'object' && err.error.message) {
                 errorMessage = err.error.message;
-            }
-            // 2. Si err.error es un string (algunos backends devuelven el error como un string JSON o plano)
-            else if (err.error && typeof err.error === 'string') {
+            } else if (err.error && typeof err.error === 'string') {
                 try {
                     const parsedError = JSON.parse(err.error);
                     if (parsedError.message) {
                         errorMessage = parsedError.message;
                     } else {
-                        errorMessage = err.error; // Usar el string completo si no hay 'message' dentro
+                        errorMessage = err.error;
                     }
                 } catch (e) {
-                    errorMessage = err.error; // No es JSON, usar el string plano
+                    errorMessage = err.error;
                 }
-            }
-            // 3. Último recurso: Usar el mensaje general de la HttpErrorResponse (ej: "Http failure response for...")
-            else if (err.message) {
+            } else if (err.message) {
                 errorMessage = err.message;
             }
+
+            if (err.status === 0) {
+                errorMessage = 'No se pudo conectar al servidor. Verifica tu conexión a internet.';
+            } else if (err.status === 401) {
+                errorMessage = 'Credenciales inválidas. Por favor, verifica tu usuario y contraseña.';
+            }
         }
-        // --- FIN DE LA MODIFICACIÓN CRUCIAL ---
 
         const alert = await this.alertController.create({
           header: 'Error de Login',
-          message: errorMessage, // ¡Ahora esto debería contener 'Credenciales inválidas'!
+          message: errorMessage,
           buttons: ['OK'],
         });
         await alert.present();
@@ -133,7 +135,7 @@ export class LoginPage implements OnInit {
   }
 
   goToRegister() {
-    this.router.navigate(['/tabs/registro']);
+    this.router.navigate(['/registro']);
   }
 
   isRegisterLinkActive(): boolean {

@@ -19,6 +19,8 @@ def create_user(db: Session, user: schemas.UserCreate):
         lastname=user.lastname if user.lastname else None,
         education=user.education if user.education else None,
         birthdate=user.birthdate if user.birthdate else None,
+        latitude=user.latitude if user.latitude else None,
+        longitude=user.longitude if user.longitude else None, 
         is_active=True 
     )
     db.add(db_user)

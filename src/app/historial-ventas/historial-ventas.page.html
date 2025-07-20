@@ -47,7 +47,7 @@
           </ion-list-header>
           <ion-item *ngFor="let item of ticket.ticket_items">
             <ion-label>
-              {{ item.cantidad_prod_ticket }} x {{ item.product_obj_ticket?.name || 'Producto Desconocido' }}
+            {{ item.cantidad_prod_ticket }} x {{ item.product_obj_ticket.name || 'Producto Desconocido' }}
             </ion-label>
           </ion-item>
         </ion-list>

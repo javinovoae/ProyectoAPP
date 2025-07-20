@@ -1,6 +1,5 @@
 # backend/models.py
-
-from sqlalchemy import Column, Integer, String, Boolean, Date, DateTime, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Boolean, Date, DateTime, ForeignKey, UniqueConstraint, Numeric # <--- Asegúrate de añadir Numeric aquí
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone 
 from backend.database import Base 
@@ -15,6 +14,9 @@ class User(Base):
     lastname = Column(String, nullable=True)
     education = Column(String, nullable=True)
     birthdate = Column(String, nullable=True) 
+    latitude = Column(Numeric(precision=9, scale=6), nullable=True) 
+    longitude = Column(Numeric(precision=9, scale=6), nullable=True) 
+
 
     # Relaciones: 
     events_managed = relationship("Event", back_populates="manager")

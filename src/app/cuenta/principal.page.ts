@@ -3,6 +3,8 @@ import { AlertController, LoadingController, ToastController } from '@ionic/angu
 import { ApiService } from '../services/api.service'; 
 import { UserProfileUpdate, UserProfile } from '../models/usuario.model';
 import { Router } from '@angular/router'; 
+import { Geolocation } from '@capacitor/geolocation'; 
+
 
 @Component({
   selector: 'app-principal',
@@ -18,7 +20,11 @@ export class PrincipalPage implements OnInit {
   nivelEducacion: string = '';
   fechaNacimiento: string = ''; 
 
-userId: number | null = null; 
+  userId: number | null = null; 
+  latitude: number | undefined;
+  longitude: number | undefined;
+  error: string = '';
+  direccionDisplay: string = '';
 
   constructor(
     private toastController: ToastController,
@@ -52,6 +58,7 @@ userId: number | null = null;
       this.apellido = '';
       this.nivelEducacion = '';
       this.fechaNacimiento = '';
+      this.direccionDisplay = ''
       this.presentToast('No se ha iniciado sesión. Por favor, inicie sesión.', 'warning');
       this.router.navigateByUrl('/login', { replaceUrl: true }); 
     }
@@ -77,6 +84,26 @@ userId: number | null = null;
         this.apellido = userProfile.lastname || '';
         this.nivelEducacion = userProfile.education || '';
         this.fechaNacimiento = userProfile.birthdate || ''; 
+
+        // --- Lógica para cargar y mostrar latitud/longitud ---
+        if (userProfile.latitude !== undefined && userProfile.latitude !== null) {
+          this.latitude = userProfile.latitude;
+        } else {
+            this.latitude = undefined; // Asegurarse de que sea undefined si no viene
+        }
+        if (userProfile.longitude !== undefined && userProfile.longitude !== null) {
+          this.longitude = userProfile.longitude;
+        } else {
+            this.longitude = undefined; 
+        }
+
+        if (this.latitude !== undefined && this.longitude !== undefined) {
+          this.direccionDisplay = `Lat: ${this.latitude.toFixed(6)}, Lon: ${this.longitude.toFixed(6)}`;
+        } else {
+          this.direccionDisplay = ''; 
+        }
+
+
         this.presentToast('Información de la cuenta cargada desde el servidor.', 'success');
       },
       error: async (err: any) => {
@@ -91,6 +118,30 @@ userId: number | null = null;
             this.apellido = cachedUserProfile.lastname || '';
             this.nivelEducacion = cachedUserProfile.education || '';
             this.fechaNacimiento = cachedUserProfile.birthdate || '';
+
+             if (cachedUserProfile.latitude !== undefined && cachedUserProfile.latitude !== null) {
+                this.latitude = cachedUserProfile.latitude;
+            } else {
+                this.latitude = undefined;
+            }
+            if (cachedUserProfile.longitude !== undefined && cachedUserProfile.longitude !== null) {
+                this.longitude = cachedUserProfile.longitude;
+            } else {
+                this.longitude = undefined;
+            }
+
+            if (this.latitude !== undefined && this.longitude !== undefined) {
+                this.direccionDisplay = `Lat: ${this.latitude.toFixed(6)}, Lon: ${this.longitude.toFixed(6)}`;
+            } else {
+                this.direccionDisplay = '';
+            }
+
+
+
+
+
+
+
             this.presentToast('Información cargada desde caché (sin conexión).', 'warning');
           } catch (parseError) {
             console.error('Error al parsear el perfil de usuario desde localStorage:', parseError);
@@ -108,6 +159,7 @@ userId: number | null = null;
           this.apellido = '';
           this.nivelEducacion = '';
           this.fechaNacimiento = '';
+          this.direccionDisplay = '';
         }
       }
     });
@@ -122,8 +174,6 @@ userId: number | null = null;
       return;
     }
 
-
-        // --- VALIDACIÓN DE EDAD ---
     if (this.fechaNacimiento) { 
       const fechaNacimientoDate = new Date(this.fechaNacimiento);
       const hoy = new Date();
@@ -155,7 +205,9 @@ userId: number | null = null;
       name: this.nombre === '' ? null : this.nombre,
       lastname: this.apellido === '' ? null : this.apellido,
       education: this.nivelEducacion === '' ? null : this.nivelEducacion,
-      birthdate: this.fechaNacimiento === '' ? null : this.fechaNacimiento
+      birthdate: this.fechaNacimiento === '' ? null : this.fechaNacimiento,
+      latitude: this.latitude === undefined ? null : this.latitude, 
+      longitude: this.longitude === undefined ? null : this.longitude 
     };
 
     this.apiService.updateUserProfile(this.userId, userData).subscribe({
@@ -166,6 +218,26 @@ userId: number | null = null;
         this.apellido = updatedProfile.lastname || '';
         this.nivelEducacion = updatedProfile.education || '';
         this.fechaNacimiento = updatedProfile.birthdate || '';
+        
+        // --- Lógica para actualizar y mostrar latitud/longitud después de guardar ---
+        if (updatedProfile.latitude !== undefined && updatedProfile.latitude !== null) {
+            this.latitude = updatedProfile.latitude;
+        } else {
+            this.latitude = undefined;
+        }
+        if (updatedProfile.longitude !== undefined && updatedProfile.longitude !== null) {
+            this.longitude = updatedProfile.longitude;
+        } else {
+            this.longitude = undefined;
+        }
+
+        if (this.latitude !== undefined && this.longitude !== undefined) {
+            this.direccionDisplay = `Lat: ${this.latitude.toFixed(6)}, Lon: ${this.longitude.toFixed(6)}`;
+        } else {
+            this.direccionDisplay = '';
+        }
+        
+        
         this.presentToast('Información guardada correctamente.', 'success');
       },
       error: async (err: any) => {
@@ -174,6 +246,23 @@ userId: number | null = null;
         this.presentToast(err.message || 'No se pudo guardar la información. Inténtalo de nuevo.', 'danger');
       }
     });
+  }
+
+  async obtenerUbicacion() {
+    try {
+      const position = await Geolocation.getCurrentPosition();
+      this.latitude = position.coords.latitude;
+      this.longitude = position.coords.longitude;
+      this.error = ''; 
+      this.direccionDisplay = `Lat: ${this.latitude.toFixed(6)}, Lon: ${this.longitude.toFixed(6)}`;
+      console.log('Latitud:', this.latitude);
+      console.log('Longitud:', this.longitude);
+      this.presentToast('Ubicación obtenida correctamente.', 'success');
+    } catch (error: any) {
+      this.error = 'Error al obtener ubicación: ' + error.message;
+      console.error('Error geolocalización', error);
+      this.presentToast(this.error, 'danger');
+    }
   }
 
   async presentToast(message: string, color: string = 'primary') {

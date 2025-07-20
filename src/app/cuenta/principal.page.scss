@@ -25,10 +25,11 @@ h2 {
 
 .casilla{
 color: #ce7b0e;
+margin-bottom: 2px;
 }
 .contenedor-general{
     --background: url('../../assets/imag/FONDOPOP.jpg') no-repeat center center / cover;
-    z-index: -2; 
+    z-index: -1; 
     min-height: 100vh;
     overflow: hidden; 
     min-height: 100vh; 
@@ -36,12 +37,12 @@ color: #ce7b0e;
     flex-direction: column; 
     justify-content: center; 
     align-items: center; 
-    padding: 20px 0;
+    padding: 5px 0;
 
 }
 
 .form-contenedor {
-    margin-top: 15px;
+    margin-top: 3px;
     display: flex;            
     flex-direction: column;     
     justify-content: flex-start; 
@@ -50,15 +51,15 @@ color: #ce7b0e;
     width: 100%;       
     margin-left: auto;
     margin-right: auto;
-    padding: 10px; 
+    padding: 5px; 
     background-color: rgb(255, 255, 255); 
-    border-radius: 8px;    
+    border-radius: 5px;    
     border-color:#c07e28;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
     text-align: center; 
 }
 .icono-principal{
-    font-size: 40px;
+    font-size: 20px;
     color:rgb(109, 64, 168)
 }
 
@@ -66,14 +67,19 @@ color: #ce7b0e;
     --background: rgb(109, 64, 168); 
     color: white;    
 }
-.calendario{
+
+.boton-direccion{
     --background: rgb(109, 64, 168); 
+    color: white;    
+} 
+.calendario{
+background: rgb(109, 64, 168); 
 }
 
 .lottie-container-1 {
     background-color: rgba(255, 255, 255, 0) !important;
     position: fixed;
-    top: 350px;   
+    top: 433px;   
     left: 680px; 
     pointer-events: none;
     overflow: hidden;
@@ -83,7 +89,7 @@ color: #ce7b0e;
 .lottie-container-2 {
     background-color: rgba(255, 255, 255, 0) !important;
     position: fixed;
-    top: 350px;   
+    top: 433px;   
     left: 630px; 
     pointer-events: none;
     overflow: hidden;

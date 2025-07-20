@@ -1,57 +1,56 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { TabsPage } from './tabs.page';
-
+import { AuthGuard } from '../guards/auth.guard'; 
 const routes: Routes = [
   {
     path: '',
     component: TabsPage,
     children: [
-            
       {
         path: 'cuenta',
-        loadChildren: () => import('../cuenta/principal.module').then(m => m.PrincipalPageModule)
+        loadChildren: () => import('../cuenta/principal.module').then(m => m.PrincipalPageModule),
+        canActivate: [AuthGuard] 
       },
-
       {
         path: 'home',
-        loadChildren: () => import('../home/home.module').then(m => m.HomePageModule )
+        loadChildren: () => import('../home/home.module').then(m => m.HomePageModule),
+        canActivate: [AuthGuard] 
       },
       {
         path: 'historial-ventas',
-        loadChildren: () => import('../historial-ventas/historial-ventas.module').then(m => m.HistorialVentasPageModule)
+        loadChildren: () => import('../historial-ventas/historial-ventas.module').then(m => m.HistorialVentasPageModule),
+        canActivate: [AuthGuard] 
       },
-
-            {
+      {
         path: 'inventario',
-        loadChildren: () => import('../inventario/inventario.module').then(m => m.InventarioPageModule)
+        loadChildren: () => import('../inventario/inventario.module').then(m => m.InventarioPageModule),
+        canActivate: [AuthGuard] 
       },
-
-            {
+      {
         path: 'evento',
-        loadChildren: () => import('../evento/evento.module').then(m => m.EventoPageModule)
+        loadChildren: () => import('../evento/evento.module').then(m => m.EventoPageModule),
+        canActivate: [AuthGuard] 
       },
       {
         path: 'productoview/:id',
-        loadChildren: () => import('../productoview/productoview.module').then(m => m.ProductoviewPageModule)
+        loadChildren: () => import('../productoview/productoview.module').then(m => m.ProductoviewPageModule),
+        canActivate: [AuthGuard] 
       },
       {
         path: 'venta',
-        loadChildren: () => import('../venta/venta.module').then(m => m.VentaPageModule)
-      },
-      {
-        path: 'registro',
-        loadChildren: () => import('../registro/registro.module').then(m => m.RegistroPageModule)
+        loadChildren: () => import('../venta/venta.module').then(m => m.VentaPageModule),
+        canActivate: [AuthGuard] 
       },
 
-
-      {
+      { 
         path: '',
-        redirectTo: '/tabs/home',
+        redirectTo: '/tabs/home', 
         pathMatch: 'full'
       }
     ]
   },
+
 ];
 
 @NgModule({
